@@ -43,9 +43,9 @@ async fn main() -> Result<()> {
             upgrade_progress(&mut processed_tables, total_tables);
         }
         task_set.spawn(clone_table(
-            table.to_string(),
             pool_source.clone(),
             pool_target.clone(),
+            table.to_string(),
         ));
     }
 
@@ -64,7 +64,7 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-async fn clone_table(table: String, pool_source: Pool, pool_target: Pool) -> Result<()> {
+async fn clone_table(pool_source: Pool, pool_target: Pool, table: String) -> Result<()> {
     let mut conn_source = pool_source.get_conn().await?;
     let mut conn_target = pool_target.get_conn().await?;
 
@@ -73,7 +73,7 @@ async fn clone_table(table: String, pool_source: Pool, pool_target: Pool) -> Res
         .query_drop(format!("DROP TABLE IF EXISTS `{}`", table))
         .await?;
 
-    let table_creation_sql = get_table_structure(&table, &mut conn_source).await?;
+    let table_creation_sql = get_table_structure(&mut conn_source, &table).await?;
 
     debug!("Creating table `{}`", table);
     conn_target.query_drop(table_creation_sql).await?;
@@ -139,7 +139,7 @@ async fn get_tables(conn: &mut Conn) -> Result<Vec<String>> {
     Ok(tables)
 }
 
-async fn get_table_structure(table: &str, conn: &mut Conn) -> Result<String> {
+async fn get_table_structure(conn: &mut Conn, table: &str) -> Result<String> {
     let re = Regex::new(r"AUTO_INCREMENT=\d+\s").unwrap();
     let sql = conn
         .query_first::<Row, _>(format!("SHOW CREATE TABLE `{}`", table))
