@@ -9,7 +9,7 @@ cargo build --release
 ## Usage
 
 ```bash
-cp env.example .env
+cp .env.example .env
 
 ./target/release/db-cloner
 ```
