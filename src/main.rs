@@ -72,10 +72,10 @@ async fn clone_table(pool_source: Pool, pool_target: Pool, table: String) -> Res
         .query_drop(format!("DROP TABLE IF EXISTS `{}`", table))
         .await?;
 
-    let table_creation_sql = get_table_structure(&mut conn_source, &table).await?;
-
     debug!("Creating table `{}`", table);
-    conn_target.query_drop(table_creation_sql).await?;
+    conn_target
+        .query_drop(get_table_structure(&mut conn_source, &table).await?)
+        .await?;
 
     let rows = conn_source
         .query::<Row, _>(format!("SELECT * FROM `{}`", table))
