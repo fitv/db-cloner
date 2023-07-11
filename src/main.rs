@@ -1,7 +1,6 @@
 use log::{debug, error, info, warn};
 use mysql_async::prelude::*;
 use mysql_async::{Conn, Pool, Result, Row, Value};
-use regex::Regex;
 use std::env;
 use std::iter;
 use std::str::FromStr;
@@ -129,26 +128,21 @@ async fn clone_table(pool_source: Pool, pool_target: Pool, table: String) -> Res
 }
 
 async fn get_tables(conn: &mut Conn) -> Result<Vec<String>> {
-    let tables = conn
+    Ok(conn
         .query::<Row, _>("SHOW TABLES")
         .await?
         .iter()
-        .map(|row| row.get::<String, _>(0).unwrap())
-        .collect::<Vec<String>>();
-
-    Ok(tables)
+        .map(|row| row.get(0).unwrap())
+        .collect())
 }
 
 async fn get_table_structure(conn: &mut Conn, table: &str) -> Result<String> {
-    let re = Regex::new(r"AUTO_INCREMENT=\d+\s").unwrap();
-    let sql = conn
+    Ok(conn
         .query_first::<Row, _>(format!("SHOW CREATE TABLE `{}`", table))
         .await?
         .unwrap()
-        .get::<String, _>(1)
-        .unwrap();
-
-    Ok(re.replace_all(&sql, "").to_string())
+        .get(1)
+        .unwrap())
 }
 
 fn init_logger() {
@@ -177,7 +171,7 @@ fn ignore_tables() -> Vec<String> {
         .split(",")
         .map(|s| s.trim().to_string())
         .filter(|s| !s.is_empty())
-        .collect::<Vec<_>>()
+        .collect()
 }
 
 fn get_env(key: &str) -> String {

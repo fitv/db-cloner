@@ -8,7 +8,6 @@ edition = "2021"
 [dependencies]
 log = "0.4"
 env_logger = "0.9"
-regex = "1.9"
 dotenvy = "0.15"
 mysql_async = "0.32"
 tokio = { version = "1.29", features = ["full"] }
