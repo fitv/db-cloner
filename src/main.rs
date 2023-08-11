@@ -11,7 +11,7 @@ const MAX_CONCURRENT: usize = 15;
 #[tokio::main]
 async fn main() -> Result<()> {
     dotenvy::dotenv().expect("Failed to read .env file");
-    init_logger();
+    setup_logger();
 
     let ignore_tables = ignore_tables();
     let pool_source = mysql_async::Pool::new(source_database_url().as_str());
@@ -145,7 +145,7 @@ async fn get_table_structure(conn: &mut Conn, table: &str) -> Result<String> {
         .unwrap())
 }
 
-fn init_logger() {
+fn setup_logger() {
     let level = env::var("LOG_LEVEL").unwrap_or("info".to_string());
 
     env_logger::builder()
